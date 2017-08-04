@@ -1,0 +1,13 @@
+Sample application to illustrate https://github.com/chexagon/redis-session-manager/issues/14.
+
+Running :
+ * start a redis bd on localhost:6379.
+ * execute `mvn clean integration-test cargo:run` +
+   this will start tomcat on port 8080. +
+   remote debugging is available on port 9009.
+ * browse http://localhost:8080/chexagon-form-auth/hello
+ * enter the credentials username=admin password=<empty> +
+   you should see the HTTP Status 400 - Invalid direct reference to form login page
+
+Additional information:
+ * chexagon is configured in src/main/webapp/WEB-INF/META-INF/context.xml

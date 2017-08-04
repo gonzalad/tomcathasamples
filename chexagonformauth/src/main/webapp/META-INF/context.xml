@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <Manager className="com.crimsonhexagon.rsm.redisson.SingleServerSessionManager"
+             endpoint="localhost:6379"
+             database="0"
+             sessionKeyPrefix="_rsm_"
+             dirtyOnMutation="true"
+             ignorePattern=".*\\.(ico|png|gif|jpg|jpeg|swf|css|js)$"
+    />
+</Context>
