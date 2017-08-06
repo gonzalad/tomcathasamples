@@ -64,9 +64,19 @@
                     <version>2.6</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                </plugin>
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>tomcat-maven-plugin</artifactId>
                     <version>1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>dockerfile-maven-plugin</artifactId>
+                    <version>1.3.4</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -101,9 +111,6 @@
                             <version>${tomcat.version}</version>
                         </artifactInstaller>
                     </container>
-                    <!--<configuration>-->
-                    <!--<type>embedded</type>-->
-                    <!--</configuration>-->
                     <configuration>
                         <type>standalone</type>
                         <properties>
@@ -113,6 +120,8 @@
                                 -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009
                                 -Xnoagent
                                 -Djava.compiler=NONE
+                                -Dredis.sessions.host=localhost
+                                -Dredis.sessions.port=6379
                             </cargo.jvmargs>
                         </properties>
                     </configuration>
@@ -127,68 +136,78 @@
                         </deployable>
                     </deployables>
                 </configuration>
-
-                <!--<configuration>-->
-                <!--<container>-->
-                <!--<containerId>tomcat8x</containerId>-->
-                <!--&lt;!&ndash;<systemProperties>&ndash;&gt;-->
-                <!--&lt;!&ndash;<file.encoding>UTF-8</file.encoding>&ndash;&gt;-->
-                <!--&lt;!&ndash;<spring.profiles.active>tomcat,datajpa</spring.profiles.active>&ndash;&gt;-->
-                <!--&lt;!&ndash;</systemProperties>&ndash;&gt;-->
-                <!--<dependencies>-->
-                <!--<dependency>-->
-                <!--<groupId>com.crimsonhexagon</groupId>-->
-                <!--<artifactId>redis-session-manager</artifactId>-->
-                <!--</dependency>-->
-                <!--&lt;!&ndash; see https://codehaus-cargo.atlassian.net/browse/CARGO-444 &ndash;&gt;-->
-                <!--<dependency>-->
-                <!--<groupId>org.redisson</groupId>-->
-                <!--<artifactId>redisson</artifactId>-->
-                <!--</dependency>-->
-                <!--<dependency>-->
-                <!--<groupId>io.netty</groupId>-->
-                <!--<artifactId>netty-transport-native-epoll</artifactId>-->
-                <!--<classifier>linux-x86_64</classifier>-->
-                <!--</dependency>-->
-                <!--</dependencies>-->
-                <!--</container>-->
-                <!--<deployables>-->
-                <!--<deployable>-->
-                <!--<groupId>${groupId}</groupId>-->
-                <!--<artifactId>${artifactId}</artifactId>-->
-                <!--<type>war</type>-->
-                <!--<properties>-->
-                <!--<context>${project.build.finalName}</context>-->
-                <!--</properties>-->
-                <!--</deployable>-->
-                <!--</deployables>-->
-                <!--</configuration>-->
             </plugin>
-            <!-- see https://codehaus-cargo.atlassian.net/browse/CARGO-444 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy</id>
-                        <phase>pre-integration-test</phase>
+                        <id>copy-in-target</id>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/cargo/configurations/tomcat8x/lib
-                            </outputDirectory>
                             <outputDirectory>
-                                ${project.build.directory}/cargo/installs/tomcat-${tomcat.version}/apache-tomcat-${tomcat.version}/lib
+                                ${project.build.directory}/chexagon-plugin/lib
                             </outputDirectory>
                             <excludeGroupIds>org.apache.tomcat,javax.servlet</excludeGroupIds>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <!-- see https://codehaus-cargo.atlassian.net/browse/CARGO-444 -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <target>
+                                <copy todir="${project.build.directory}/cargo/installs/tomcat-${tomcat.version}/apache-tomcat-${tomcat.version}/lib"
+                                      overwrite="true">
+                                    <fileset dir="${project.build.directory}/chexagon-plugin/lib"/>
+                                </copy>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
+
         <finalName>${artifactId}</finalName>
     </build>
+
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>dockerfile-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <repository>gonzalad/${artifactId}</repository>
+                            <tag>${project.version}</tag>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
 
 
 </project>

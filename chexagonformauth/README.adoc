@@ -9,5 +9,15 @@ Running :
  * enter the credentials username=admin password=<empty> +
    you should see the HTTP Status 400 - Invalid direct reference to form login page
 
+Running as docker :
+ * execute `mvn clean package -Pdocker`
+ * execute `docker-compose -f src/main/docker/docker-compose.yml up` +
+   this starts up the application behind a load balancer (accessible though 8080 port).
+ * open your browser on http://localhost:8080/chexagon-form-auth/hello
+ * you can scale up the number of app with : +
+   docker-compose -f src/main/docker/docker-compose.yml scale app=2
+ * enter the credentials username=admin password=<empty> +
+   you should see the HTTP Status 400 - Invalid direct reference to form login page
+
 Additional information:
  * chexagon is configured in src/main/webapp/WEB-INF/META-INF/context.xml

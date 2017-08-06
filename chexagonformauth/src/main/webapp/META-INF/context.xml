@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
     <Manager className="com.crimsonhexagon.rsm.redisson.SingleServerSessionManager"
-             endpoint="localhost:6379"
+             endpoint="${redis.sessions.host}:${redis.sessions.port}"
              database="0"
              sessionKeyPrefix="_rsm_"
              dirtyOnMutation="true"

@@ -1,0 +1,49 @@
+version: "3"
+#
+# starts a load balanced IDP.
+# load balancer is traefik configured with sticky-session support (cookie based)
+#
+# the docker-compose up command start a single instance of the app.
+# you can scale up the number of instances after startup by doing
+# (i.e. to scale to 2 instances):
+#
+# docker-compose -f build/docker-compose-ha.yml scale app=2
+#
+# requires docker engine 1.13.0+
+# see http://littlebigextra.com/how-to-maintain-session-persistence-sticky-session-in-docker-swarm-with-multiple-containers/
+services:
+  loadbalancer:
+    image: traefik
+    networks:
+      - net1
+    command: --docker \
+      --docker.watch \
+      --web \
+      --loglevel=DEBUG
+    ports:
+      - 8080:80
+      - 25582:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  app:
+    image: gonzalad/chexagon-form-auth:1.0-SNAPSHOT
+    networks:
+      - net1
+    ports:
+      - "8080"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    labels:
+      - "traefik.backend.loadbalancer.sticky=true"
+      - "traefik.docker.network=docker_net1"
+      - "traefik.port=8080"
+      - "traefik.frontend.rule=PathPrefix:/"
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - net1
+networks:
+  net1:
