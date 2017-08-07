@@ -12,6 +12,8 @@
     <packaging>war</packaging>
     <properties>
         <tomcat.version>8.0.44</tomcat.version>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
     </properties>
 
     <repositories>
@@ -59,6 +61,20 @@
     </dependencyManagement>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/docker</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -189,6 +205,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
 
@@ -208,12 +237,13 @@
                                 <id>default</id>
                                 <goals>
                                     <goal>build</goal>
+                                    <goal>push</goal>
                                 </goals>
                             </execution>
                         </executions>
                         <configuration>
                             <repository>gonzalad/${artifactId}</repository>
-                            <tag>${project.version}</tag>
+                            <tag>${project.version}-${timestamp}-${git.commit.id.abbrev}</tag>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -222,5 +252,12 @@
 
     </profiles>
 
+    <distributionManagement>
+        <repository>
+            <id>snapshot-repo</id>
+            <name>MyCo Internal Repository</name>
+            <url>http://mycompany.com</url>
+        </repository>
+    </distributionManagement>
 
 </project>
