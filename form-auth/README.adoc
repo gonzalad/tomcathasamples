@@ -1,6 +1,7 @@
-Sample application to illustrate https://github.com/chexagon/redis-session-manager/issues/14.
+Sample application to illustrate HA setup with redisson plugin for Tomcat.
 
-Running :
+*ONLY docker method works for now* Running :
+
  * start a redis bd on localhost:6379.
  * execute `mvn clean integration-test cargo:run` +
    this will start tomcat on port 8080. +
@@ -10,6 +11,7 @@ Running :
    you should see the HTTP Status 400 - Invalid direct reference to form login page
 
 Running as docker :
+
  * execute `mvn clean package -Pdocker`
  * execute `docker-compose -f src/main/docker/docker-compose.yml up` +
    this starts up the application behind a load balancer (accessible though 8080 port).
@@ -20,4 +22,29 @@ Running as docker :
    you should see the HTTP Status 400 - Invalid direct reference to form login page
 
 Additional information:
- * chexagon is configured in src/main/webapp/WEB-INF/META-INF/context.xml
+
+ * ha plugin is configured in src/main/webapp/WEB-INF/META-INF/context.xml
+
+Bugs:
+
+ * redisson plugin doesn't work when we use Tomcat based form authentication. +
+   Tomcat shows the login page whenever we try to access a previously authenticated
+   session after killing/restarting tomcat. +
+   To reproduce it :
++
+```
+mvn clean package -Pdocker
+docker-compose -f src/main/docker/docker-compose.yml up
+# access http://localhost:8080/form-auth/hello
+# you'll get prompted for your credentials
+...
+# kill docker app container
+docker kill `docker ps -a -q --filter="name=app"`
+# restart app container
+docker-compose -f src/main/docker/docker-compose.yml scale app=1
+# access http://localhost:8080/form-auth/hello
+# you'll get prompted for your credentials -> that's not normal, you should already been
+# logged
+...
+
+```
