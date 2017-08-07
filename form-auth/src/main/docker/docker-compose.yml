@@ -31,9 +31,13 @@ services:
       - net1
     ports:
       - "8080"
+      - "8000"
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - JPDA_ADDRESS=8000
+      - JPDA_TRANSPORT=dt_socket
+    command: ["/usr/local/tomcat/bin/catalina.sh", "jpda", "run"]
     labels:
       - "traefik.backend.loadbalancer.sticky=true"
       - "traefik.docker.network=docker_net1"
