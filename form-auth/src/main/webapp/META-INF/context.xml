@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
     <Valve className="com.gopivotal.manager.SessionFlushValve"/>
-    <Manager className="org.apache.catalina.session.PersistentManager"
-             processExpiresFrequency="1"
-             maxIdleSwap="10"
-             minIdleSwap="10">
+    <Manager className="org.apache.catalina.session.PersistentManager">
         <Store className="com.gopivotal.manager.redis.RedisStore"
                host="${redis.sessions.host}"
                port="${redis.sessions.port}"/>
