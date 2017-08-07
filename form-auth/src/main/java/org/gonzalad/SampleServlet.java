@@ -3,11 +3,13 @@ package org.gonzalad;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
+import java.util.UUID;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @WebServlet("/hello")
 public class SampleServlet extends HttpServlet {
@@ -27,6 +29,27 @@ public class SampleServlet extends HttpServlet {
             String headerValue = request.getHeader(headerName);
             out.print("</em>, Header Value: <em>" + headerValue);
             out.println("</em>");
+        }
+
+        initializeSessionUUIAttribute(request);
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Enumeration attributeNames = session.getAttributeNames();
+            while (attributeNames.hasMoreElements()) {
+                String attributeName = (String) attributeNames.nextElement();
+                out.print("<br/>Session Attribute Name: <em>" + attributeName);
+                Object attributeValue = session.getAttribute(attributeName);
+                out.print("</em>, Session Attribute Value: <em>" + attributeValue);
+                out.println("</em>");
+            }
+        }
+    }
+
+    private void initializeSessionUUIAttribute(HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+        if (session.getAttribute("uuid") == null) {
+            session.setAttribute("uuid", UUID.randomUUID().toString());
         }
     }
 
